@@ -96,8 +96,6 @@ For efficient usage, manually manipulate the `Layers` in your `Composition`:
 
 ```typescript
 const layer = composition.createLayer();
-// equivalent to
-const layer = composition.insertLayer(layer, index);
 ```
 
 Alternatively, you can create a `Layer` instance beforehand and then prepend it:
@@ -105,8 +103,10 @@ Alternatively, you can create a `Layer` instance beforehand and then prepend it:
 ```typescript
 const layer = new Layer();
 // add clips beforehand
-composition.insertLayer(layer);
+await composition.insertLayer(layer);
 ```
+
+`insertLayer` is an asynchronous action because it waits until all contained `Clips` are initialized.
 
 > You can remove the layer again by calling `composition.removeLayer(layer)`
 
