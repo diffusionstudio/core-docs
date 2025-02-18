@@ -3,3 +3,7 @@
 .nextra-sidebar-footer {
   display: none;
 }
+
+body > header > nav > div.nextra-scrollbar {
+  display: none;
+}
