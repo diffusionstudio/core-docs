@@ -33,7 +33,7 @@ export const metadata: Metadata = {
   },
 };
 
-const banner = <Banner storageKey="some-key">Core 3.0 is released 🎉</Banner>;
+const banner = <Banner storageKey="core-3-release">Welcome to Diffusion Studio Core v3.0 - Now Available! 🎉</Banner>;
 const footer = <Footer className="py-5 text-sm">Copyright © 2025 Diffusion Studio. All rights reserved.</Footer>;
 
 export default async function RootLayout({
