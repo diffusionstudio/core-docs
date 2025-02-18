@@ -1,1 +1,5 @@
 @import "tailwindcss";
+
+.nextra-sidebar-footer {
+  display: none;
+}

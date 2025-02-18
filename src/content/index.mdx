@@ -1,12 +1,19 @@
-import { Bleed } from 'nextra/components'
-
 # Introduction
 
-**Nextra** is a [Next.js](https://nextjs.org) based static site generator.
+**Core** is a TypeScript library for programmatic video editing using WebCodecs. It runs entirely in the browser and supports headless editing, making it ideal for automating video processing tasks.  
 
-It supports Markdown and React components ([MDX](/features/mdx)), automatically
-generated [sidebar and anchor links](/get-started#sidebar-and-anchor-links),
-file-system based routing, built-in syntax highlighting, image optimization,
-custom layouts, i18n, and all the features you love about Next.js.
+For server-side usage, you can integrate **Core** with **Playwright** or **Puppeteer**. While using a browser for video rendering in a server environment may seem unconventional, Chromium is one of the most sophisticated rendering engines available, making it a powerful choice for this purpose.  
 
-Here's what you will get in 1 minute: 
+## Installation  
+
+```bash
+npm install @diffusionstudio/core
+```
+
+## Usage  
+
+```ts
+import * as core from '@diffusionstudio/core';
+
+const composition = new core.Composition();
+```  

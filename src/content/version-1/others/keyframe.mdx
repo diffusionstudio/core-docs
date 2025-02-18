@@ -1,0 +1,70 @@
+# Keyframe
+
+The `Keyframe` object is the core of animations. You can instantiate it like this:
+
+```typescript
+import { Keyframe } from '@diffusionstudio/core';
+
+const keyframe = new Keyframe(
+  [0, 12],  // input range in frames
+  [0, 100], // output range as numbers
+);
+```
+
+Keyframes are always relative to the start of a `Clip`. In this example, a particular property will be `0` at frame `0` and `100` at frame `12`. What happens after frame `12` is determined by the `extrapolation` behavior of the keyframe. The default is `clamp`, causing the value to stay between `0` and `100` outside the input range. Alternatively, `extend` will extrapolate the values beyond the input range.
+
+Here is an example with all available properties:
+
+```typescript
+const keyframe = new Keyframe(
+  [0, 12],      // input range in frames
+  [0, 2 * 360], // output range in degrees
+  {
+    easing: 'easeIn',      // default is 'linear'
+    extrapolate: 'extend', // default is 'clamp'
+    type: 'degrees',       // default is 'number'
+  }
+);
+```
+
+You can apply Keyframes to various properties such as:
+* Position x
+* Position y
+* Translate x
+* Translate y
+* Rotation
+* Opacity
+
+### Example
+
+In this example, multiple values of the Text Clip will be animated.
+
+```typescript
+const text = new core.TextClip({
+  text: 'Hello World',
+  position: 'center',
+  rotation: new core.Keyframe(
+    [0,  15],
+    [45, 360 * 2],
+    { type: 'degrees' }
+  ),
+  translate: {
+    x: 0,
+    y: new core.Keyframe(
+      [15, 30],
+      [40, 0],
+      { easing: 'easeIn' }
+    ),
+  },
+  alpha: new core.Keyframe(
+    [0, 5], 
+    [0, 1]
+  ),
+  scale: new core.Keyframe(
+    [0,  10, 20], 
+    [0.3, 1, 1.3]
+  ),
+});
+```
+
+Keyframes are not limited to just two values, you just need to make sure the lenght of the input range equals the lenght of the output range.

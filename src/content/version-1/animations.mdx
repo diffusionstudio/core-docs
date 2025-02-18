@@ -1,0 +1,69 @@
+import { Callout } from 'nextra/components'
+
+# Animations
+
+Diffusion Studio offers a Motion Canvas-like API for animating clips, making it an excellent choice when creating videos programmatically. However, if you're developing a video editing application, the traditional `Keyframe` based approach might be more suitable for providing users with familiar editing controls.
+
+### Getting Started with the Animation API
+
+You can access the Animation API by calling the `animate()` method on visual clips. Let's start by creating a text clip:
+
+```typescript
+const duration = composition.duration.frames;
+
+const text = await composition.add(
+  new core.TextClip({
+    text: 'Hello World',
+    position: 'center',
+    fontSize: 34,
+    stop: duration,
+  })
+);
+```
+
+<Callout title="Be Careful">Make sure that the composition already has a length. If the text is the first clip you add to the composition, its length is 0 and you are 
+assigning 0 to the stop attribute.</Callout>
+
+### Adding Animations
+
+Once you've created the clip, you can add animations like this:
+
+```typescript
+text.animate()
+  .rotation(90).to(360 * 2, 15)
+  .translateX(0, duration - 20, 'easeIn').to(-2000, 10)
+  .scale(0.3).to(1, 10);
+```
+
+This example will:
+- Rotate the clip from `90°` to `720°` over `15` frames.
+- Translate the clip from the center to the left, starting `20` seconds before the end of the video, over a span of `10` frames.
+- Scale the clip from `0.3x` to `1x` over `10` frames.
+
+### Initial Value Animations with Delays
+
+If the initial value method is called with a delay, the animation will start from the current value and animate to the specified value. For example:
+
+```typescript
+text.animate().alpha(0.5, 10);
+```
+
+Since the default alpha of a clip is `1`, this animation will reduce the alpha from `1` to `0.5` over `10` frames.
+
+### Easing Functions
+
+You can also specify an easing function as the third argument for smoother transitions. For example:
+
+```typescript
+text.animate().alpha(0.5, 10, 'easeOut');
+```
+
+### Complex Animations with Chained `to()` Methods
+
+For more intricate animations, you can chain multiple `to()` methods. Here's an example:
+
+```typescript
+text.animate().alpha(0.5).to(0.8, 10).to(0.3, 10);
+```
+
+> **Note:** The frame count in each `to()` method is relative to the previous keyframe. In this example, the alpha value will change to 0.8 after 10 frames, and then to 0.3 after another 10 frames.

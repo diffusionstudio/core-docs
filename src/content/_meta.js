@@ -1,9 +1,6 @@
 const meta = {
   index: "",
-  "get-started": "",
-  features: "",
-  themes: "",
-  advanced: "",
+  "version-1": "Version 1",
 };
 
 export default meta;
