@@ -1,5 +1,4 @@
 import { Footer, Layout, Navbar } from "nextra-theme-docs";
-import { ThemeProvider } from 'next-themes';
 import { getPageMap } from "nextra/page-map";
 import { GeistSans } from 'geist/font/sans';
 import { GeistMono } from 'geist/font/mono';
@@ -34,24 +33,24 @@ export default async function RootLayout({
     >
       <Head />
       <body className={GeistSans.className}>
-        <ThemeProvider forcedTheme="light">
-          <Layout
-            banner={banner}
-            navbar={
-              <Navbar
-                logo={<NavbarLogo />}
-                projectLink="https://github.com/diffusionstudio/core"
-              />
-            }
-            pageMap={await getPageMap()}
-            docsRepositoryBase="https://github.com/diffusionstudio/core-docs/tree/main/docs"
-            editLink="Edit this page on GitHub"
-            sidebar={{ defaultMenuCollapseLevel: 1, autoCollapse: false, toggleButton: false }}
-            footer={footer}
-          >
-            {children}
-          </Layout>
-        </ThemeProvider>
+        <Layout
+          banner={banner}
+          nextThemes={{ defaultTheme: "light", forcedTheme: "light" }}
+          darkMode={false}
+          navbar={
+            <Navbar
+              logo={<NavbarLogo />}
+              projectLink="https://github.com/diffusionstudio/core"
+            />
+          }
+          pageMap={await getPageMap()}
+          docsRepositoryBase="https://github.com/diffusionstudio/core-docs/tree/main/docs"
+          editLink="Edit this page on GitHub"
+          sidebar={{ defaultMenuCollapseLevel: 1, autoCollapse: false, toggleButton: false }}
+          footer={footer}
+        >
+          {children}
+        </Layout>
       </body>
     </html>
   );
