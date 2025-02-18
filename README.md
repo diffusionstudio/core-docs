@@ -1,13 +1,13 @@
-# Nextra 4
+# Diffusion Studio Core Documentation
 
-[Nextra 4](https://nextra.site) is a demo documentation website created using [Next.js](https://nextjs.org), [MDX](https://mdxjs.com), and [Tailwind CSS](https://tailwindcss.com).
+Built with [Nextra 4](https://nextra.site), a documentation framework powered by [Next.js](https://nextjs.org), [MDX](https://mdxjs.com), and [Tailwind CSS](https://tailwindcss.com).
 
 ## Getting Started
 
-The first step is to clone the Nextra 4 project with a git command.
+The first step is to clone the project with a git command.
 
 ```bash
-git clone https://github.com/officialrajdeepsingh/nextra-4.git
+git clone git@github.com:diffusionstudio/core-docs.git
 ```
 The next step is to install the Node Package Using the Node package manager.
 
