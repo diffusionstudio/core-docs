@@ -1,0 +1,143 @@
+import { Callout } from 'nextra/components';
+import { Tabs } from 'nextra/components';
+
+# Composition
+
+A `Composition` object manages the entire state of a video project and serves as the foundation for any video editing tasks in Diffusion Studio. This guide will walk you through setting up and manipulating a `Composition` object.
+
+## Setting Up a Composition
+
+To begin, import the `Composition` class from `@diffusionstudio/core` and create a new instance:
+
+```typescript
+import * as core from '@diffusionstudio/core';
+
+const composition = new core.Composition();
+```
+
+When constructing a `Composition`, you can pass various options. Here are the default values:
+
+```typescript
+{
+  height: 1080,
+  width: 1920,
+  background: '#000000',
+  playbackEndBehavior: 'loop'
+}
+```
+
+The specified `height` and `width` define the canvas size, but these do not dictate the final video resolution, which can be configured with the Encoder. 
+
+You can always change the `width` and `height` of the `Composition` after its creation using the `resize` method.
+
+## Visualizing the Composition
+
+To display the `Composition` within your application, you can attach it to a DOM element. The example below shows how to center the player inside a container and scale it according to the available space:
+
+<Tabs items={["TypeScript", "HTML", "CSS"]}>
+<Tabs.Tab>
+```typescript
+const container = document.getElementById('player-container') as HTMLDivElement;
+const player = document.getElementById('player') as HTMLDivElement;
+
+composition.mount(player);
+
+const scale = Math.min(
+  container.clientWidth / composition.width,
+  container.clientHeight / composition.height,
+);
+
+player.style.width = `${composition.width}px`;
+player.style.height = `${composition.height}px`;
+player.style.transform = `scale(${scale})`;
+player.style.transformOrigin = 'center';
+```
+</Tabs.Tab>
+<Tabs.Tab>
+```html
+<div id="player-container">
+  <div id="player"></div>
+</div>
+```
+</Tabs.Tab>
+<Tabs.Tab>
+```css
+#player-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+```
+</Tabs.Tab>
+</Tabs>
+
+This setup ensures that the player is centered and scales to fit within the `player-container` while maintaining the aspect ratio of the `Composition`. For production environments, consider using a [ResizeObserver](https://developer.mozilla.org/en-US/docs/Web/API/ResizeObserver) to handle dynamic resizing based on your specific needs.
+
+> **Note:** Since the canvas cannot be added as a child of two different elements, you must remove it from the player before attaching it to another element:
+```typescript
+composition.unmount();
+```
+
+## Changing the Composition State
+
+Here are some common state manipulations you might perform on a `Composition`:
+
+### **Setting the Composition Duration**
+
+By default, a `Composition`'s duration is determined by the last visible clip. However, you can assign a fixed duration using the duration setter:
+
+```typescript
+composition.duration = 300; // Sets the duration to 300 frames or 10 seconds
+```
+
+### **Adding Layers**
+
+For efficient usage, manually manipulate the `Layers` in your `Composition`:
+
+```typescript
+const layer = composition.createLayer();
+// equivalent to
+const layer = composition.insertLayer(layer, index);
+```
+
+Alternatively, you can create a `Layer` instance beforehand and then prepend it:
+
+```typescript
+const layer = new Layer();
+// add clips beforehand
+composition.insertLayer(layer);
+```
+
+> You can remove the layer again by calling `composition.removeLayer(layer)`
+
+### **Adding Clips**
+
+The `Composition` offers a convenient method to create a `Layer` and append a `Clip` to it:
+
+```typescript
+const clip = new VideoClip();
+await composition.add(clip);
+```
+
+`add` is always an asynchronous action because it waits until the `Clip` can be visualized.
+
+### **Taking Screenshots**
+
+To capture a screenshot of the current frame:
+
+```typescript
+composition.frame = 30;
+const dataUrl = await composition.screenshot();
+```
+
+### **Playback Controls**
+
+The most essential playback features are easily accessible through the `Composition`:
+
+```typescript
+await composition.play();
+await composition.pause();
+await composition.seek(30);
+```
+
+> **Hint:** Use the `composition.time()` function to conveniently display the current time of the `Composition`.

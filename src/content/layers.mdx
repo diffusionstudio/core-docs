@@ -1,0 +1,79 @@
+# Layers
+
+Layers serve as an abstraction layer in Diffusion Studio, providing three key functionalities:
+
+1. **Efficient Clip Rendering:** Layers determine which clips will be rendered, enabling the software to bypass unnecessary iterations over non-visible clips. Only visible clips within the layer are processed.
+
+2. **Layering Control:** Layers define the layering order of visible elements. The `Layer` at index 0 will be rendered last, meaning it appears on top of other layers.
+
+3. **Clip Management:** Layers manage the clips' lifecycle, including initialization, adding, removing, and updating clips.
+
+### Layer Creation
+
+```typescript
+import * as core from '@diffusionstudio/core';
+
+const layer = new core.Layer();
+```
+
+You can now add clips to the layer, but it's important to note that clips cannot overlap.
+
+```typescript
+await layer.add(
+  new core.TextClip({
+    text: 'Hello',
+    delay: 0, // Default delay
+    duration: 30,
+  })
+);
+
+await layer.add(
+  new core.TextClip({
+    text: 'World',
+    delay: 31,
+    duration: 60,
+  })
+);
+```
+
+If clips overlap, Diffusion Studio will automatically adjust the start/stop times or move the clip to a different layer. The `add` method is asynchronous because Diffusion Studio waits until the clip is fully initialized before adding it to the layer.
+
+You can render a layer by adding it to a composition:
+
+```typescript
+const composition = new core.Composition();
+
+composition.insertLayer(layer);
+```
+
+> By calling `layer.remove(clip)` you can remove a `Clip` from the `Layer`
+
+### Sequential Mode
+
+Layers can also be configured to operate in *sequential mode*, which ensures that each new clip added starts exactly where the previous clip ended (plus 1 millisecond). Sequential mode can be enabled as follows:
+
+```typescript
+layer.sequential(); // disable with layer.sequential(false);
+```
+
+### Layering
+
+Let's set up an example to illustrate how tracks are layered:
+
+```typescript
+// alterantive approach for creating tracks 
+// and adding them to the composition
+const video = composition.createLayer(); 
+const image = composition.createLayer();
+const text = composition.createLayer();
+```
+
+When a layer is added to the composition it will be added to `position 0` and rendered last. When visualized the text layer will be rendered on top of the image layer, which will be rendered on top of all `VideoClip`s inside the video layer.
+
+Each `Layer` implements the `index` method which can be used to change the order. It accepts an index or `top | bottom`:
+
+```typescript
+video.index(0);
+```
+
+Now the video layer will be rendered on top of all other layers.
