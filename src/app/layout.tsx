@@ -12,8 +12,25 @@ import type { ReactNode } from "react";
 import { NavbarLogo } from "@/components/ui/navbar-logo";
 
 export const metadata: Metadata = {
-  title: "Core 3.0",
-  description: "Core 3.0 is here.",
+  title: "Diffusion Studio Core 3.0 Documentation",
+  description: "Official documentation for Diffusion Studio Core 3.0 - The powerful video composition and animation framework for creative developers.",
+  keywords: "Diffusion Studio, video composition, animation framework, creative development, video editing API",
+  authors: [{ name: "Diffusion Studio Team" }],
+  openGraph: {
+    title: "Diffusion Studio Core 3.0 Documentation",
+    description: "Official documentation for Diffusion Studio Core 3.0 - The powerful video composition and animation framework for creative developers.",
+    type: "website",
+    siteName: "Diffusion Studio Docs",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Diffusion Studio Core 3.0 Documentation",
+    description: "Official documentation for Diffusion Studio Core 3.0 - The powerful video composition and animation framework for creative developers.",
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 const banner = <Banner storageKey="some-key">Core 3.0 is released 🎉</Banner>;
