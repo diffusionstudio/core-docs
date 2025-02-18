@@ -1,0 +1,153 @@
+# Migration Guide: v2.x to v3.x
+
+## Time Unit Updates
+
+All time units that previously required a number representing frames at 30FPS have been extended to support various formats:
+
+- `2ms`, `2s`, `2f` (frames at 30FPS), `3.5min`, `2:35` (MM\:SS), `4:32:12` (HH\:MM\:SS), `3` (frames), `Timestamp`
+
+## Media Clip Removal
+
+The `MediaClip` type has been removed. Use `AudioClip` instead:
+
+```diff
+- MediaClip
++ AudioClip
+```
+
+## Track Type Changes
+
+Typed tracks have been unified into a single type (`Track` instead of `VideoTrack`). Additionally, all `Track` references have been renamed to `Layer`:
+
+```diff
+- composition.createTrack(type);
++ composition.createLayer();
+
+- composition.insertTrack(layer, index);
++ composition.insertLayer(layer, index);
+
+- composition.findTracks();
++ composition.layers.find();
+
+- composition.tracks;
++ composition.layers;
+```
+
+## Stacked Mode Renamed to Sequential
+
+```diff
+- track.stacked();
++ layer.sequential();
+```
+
+## New Getter for Layer Type
+
+A new getter has been added to retrieve the type of the layer, determined by the first clip added:
+
+```diff
++ layer.type;
+```
+
+## Retrieving Top-Level Clips
+
+A new getter has been introduced to retrieve clips at the top level:
+
+```diff
++ composition.clips;
+```
+
+The `findClips` method has been removed in favor of the new getter:
+
+```diff
+- composition.findClips();
++ composition.clips.find();
+```
+
+## Source Creation Changes
+
+All types of sources are now created using `Source.from`:
+
+```diff
+- await VideoSource.from();
++ await Source.from<VideoSource>();
+```
+
+## Caption Creation Changes
+
+Captions are now created at the top level and can be generated using just the transcript:
+
+```diff
+- audioClip.createCaptions();
+- audioTrack.createCaptions();
++ composition.createCaptions(audioClip | transcript);
+```
+
+## Video Rendering Context Renamed
+
+```diff
+- renderer.ctx;
++ renderer.context;
+```
+
+## Transcript Function Update
+
+The `Transcript.fromJSON()` method now also accepts objects:
+
+```diff
+- Transcript.fromJSON();
++ Transcript.from();
+```
+
+## Animation Keyframe Property Renamed
+
+The `frame` property in animations has been renamed to `time`:
+
+```diff
+- keyframe.frame;
++ keyframe.time;
+```
+
+### Keyframe Structure Update
+
+Previously, keyframes were structured as follows:
+
+```json
+{
+    "key": "scale",
+    "frames": [
+        { "frame": 0, "value": 0.3 },
+        { "frame": 10, "value": 1 }
+    ]
+}
+```
+
+Now, the structure has changed:
+
+```json
+{
+    "key": "scale",
+    "frames": [
+        { "time": 0, "value": 0.3 },
+        { "time": 10, "value": 1 }
+    ]
+}
+```
+
+## Composition Audio Method Removed
+
+The `composition.audio` method has been removed:
+
+```diff
+- composition.audio();
+```
+
+## Source Attribute Changes
+
+The `source.added` attribute has been removed. Use `source.data.added = true` instead:
+
+```diff
+- source.added;
++ source.data.added = true;
+```
+
+This guide summarizes the breaking changes and necessary migration steps for upgrading your video editing engine.
