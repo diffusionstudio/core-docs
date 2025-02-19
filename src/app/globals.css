@@ -1,9 +1,107 @@
 @import "tailwindcss";
 
+:root {
+  --x-font-mono: 'GeistMono', ui-monospace, SFMono-Regular, Roboto Mono, Menlo, Monaco, Liberation Mono, DejaVu Sans Mono, Courier New, monospace;
+  --x-color-red-100: oklch(0.936 0.032 17.717);
+  --x-color-red-200: oklch(0.885 0.062 18.334);
+  --x-color-red-500: oklch(0.637 0.237 25.331);
+  --x-color-red-900: oklch(0.396 0.141 25.723);
+  --x-color-orange-50: oklch(0.98 0.016 73.684);
+  --x-color-orange-100: oklch(0.954 0.038 75.164);
+  --x-color-orange-300: oklch(0.837 0.128 66.29);
+  --x-color-orange-400: oklch(0.75 0.183 55.934);
+  --x-color-orange-800: oklch(0.47 0.157 37.304);
+  --x-color-yellow-50: oklch(0.987 0.026 102.212);
+  --x-color-yellow-100: oklch(0.973 0.071 103.193);
+  --x-color-yellow-200: oklch(0.945 0.129 101.54);
+  --x-color-yellow-700: oklch(0.554 0.135 66.442);
+  --x-color-yellow-900: oklch(0.421 0.095 57.708);
+  --x-color-blue-100: oklch(0.932 0.032 255.585);
+  --x-color-blue-200: oklch(0.882 0.059 254.128);
+  --x-color-blue-900: oklch(0.379 0.146 265.522);
+  --x-color-slate-50: oklch(0.985 0 0);
+  --x-color-slate-100: oklch(0.967 0.001 286.375);
+  --x-color-slate-200: oklch(0.92 0.004 286.32);
+  --x-color-slate-700: oklch(0.37 0.013 285.805);
+  --x-color-slate-900: oklch(0.21 0.006 285.885);
+  --x-color-gray-50: oklch(0.985 0 0);
+  --x-color-gray-100: oklch(0.967 0.001 286.375);
+  --x-color-gray-200: oklch(0.92 0.004 286.32);
+  --x-color-gray-300: oklch(0.871 0.006 286.286);
+  --x-color-gray-400: oklch(0.705 0.015 286.067);
+  --x-color-gray-500: oklch(0.552 0.016 285.938);
+  --x-color-gray-600: oklch(0.442 0.017 285.786);
+  --x-color-gray-700: oklch(0.37 0.013 285.805);
+  --x-color-gray-800: oklch(0.274 0.006 286.033);
+  --x-color-gray-900: oklch(0.21 0.006 285.885);
+  --x-color-neutral-50: oklch(0.985 0 0);
+  --x-color-neutral-200: oklch(0.92 0.004 286.32);
+  --x-color-neutral-400: oklch(0.705 0.015 286.067);
+  --x-color-neutral-500: oklch(0.552 0.016 285.938);
+  --x-color-neutral-600: oklch(0.442 0.017 285.786);
+  --x-color-neutral-700: oklch(0.37 0.013 285.805);
+  --x-color-neutral-800: oklch(0.274 0.006 286.033);
+  --x-color-neutral-900: oklch(0.21 0.006 285.885);
+  --x-color-black: #000;
+  --x-color-white: #fff;
+  --x-spacing: 0.25rem;
+  --x-container-2xl: 42rem;
+  --x-text-xs: 0.75rem;
+  --x-text-xs--line-height: calc(1 / 0.75);
+  --x-text-sm: 0.875rem;
+  --x-text-sm--line-height: calc(1.25 / 0.875);
+  --x-text-base: 1rem;
+  --x-text-base--line-height: calc(1.5 / 1);
+  --x-text-lg: 1.125rem;
+  --x-text-lg--line-height: calc(1.75 / 1.125);
+  --x-text-xl: 1.25rem;
+  --x-text-xl--line-height: calc(1.75 / 1.25);
+  --x-text-2xl: 1.5rem;
+  --x-text-2xl--line-height: calc(2 / 1.5);
+  --x-text-3xl: 1.875rem;
+  --x-text-3xl--line-height: calc(2.25 / 1.875);
+  --x-text-4xl: 2.25rem;
+  --x-text-4xl--line-height: calc(2.5 / 2.25);
+  --x-font-weight-normal: 400;
+  --x-font-weight-medium: 500;
+  --x-font-weight-semibold: 600;
+  --x-font-weight-bold: 700;
+  --x-tracking-tight: -0.025em;
+  --x-leading-tight: 1.25;
+  --x-radius-sm: 0.25rem;
+  --x-radius-md: 0.375rem;
+  --x-radius-lg: 0.5rem;
+  --x-radius-xl: 0.75rem;
+  --x-ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --x-ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --x-animate-spin: spin 1s linear infinite;
+  --x-blur-md: 12px;
+  --x-default-transition-duration: 150ms;
+  --x-default-transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  --x-color-nextra-bg: oklch(0.995 0 0);
+  --x-color-primary-50: oklch(0.985 0 0);
+  --x-color-primary-100: oklch(0.967 0.001 286.375);
+  --x-color-primary-200: oklch(0.92 0.004 286.32);
+  --x-color-primary-300: oklch(0.871 0.006 286.286);
+  --x-color-primary-400: oklch(0.705 0.015 286.067);
+  --x-color-primary-500: oklch(0.552 0.016 285.938);
+  --x-color-primary-600: oklch(0.442 0.017 285.786);
+  --x-color-primary-700: oklch(0.37 0.013 285.805);
+  --x-color-primary-800: oklch(0.21 0.006 285.885);
+}
+
+html {
+  background: var(--x-color-nextra-bg) !important;
+}
+
+footer {
+  background: var(--x-color-nextra-bg) !important;
+}
+
 .nextra-sidebar-footer {
   display: none;
 }
 
-body > header > nav > div.nextra-scrollbar {
+body>header>nav>div.nextra-scrollbar {
   display: none;
 }
