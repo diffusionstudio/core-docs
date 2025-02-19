@@ -94,7 +94,7 @@ html {
   background: var(--x-color-nextra-bg) !important;
 }
 
-footer {
+div:has(> footer) {
   background: var(--x-color-nextra-bg) !important;
 }
 
