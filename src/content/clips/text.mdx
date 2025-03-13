@@ -1,38 +1,77 @@
 # Text Clips
 
-Here is a basic example of how to style text clips:
+The following example demonstrates how to style text clips:
 
 ```typescript
 import * as core from '@diffusionstudio/core';
 
-const font = await core.FontManager.load({ 
-  family: 'Geologica', 
-  weight: '400',
+const thin = await FontManager.load({
+  family: 'Geologica',
+  weight: '300',
+  size: 19
 });
 
-const text = new core.TextClip({
-  text: 'Hello World',
-  align: 'center',
-  baseline: 'middle',
-  color: '#FFFFFF',
-  font,
-  fontSize: 16, // make sure to place after font
-  leading: 1.1,
-  stroke: {
-    color: '#000000',
-    width: 4,
-    lineJoin: 'round',
-  },
-  shadow: {
-    opacity: 70,
-    blur: 6,
-    offsetX: 2,
-    offsetY: 4,
-  },
-  x: '12%',
-  y: '50%',
+const bold = await FontManager.load({
+  family: 'Geologica',
+  weight: '700',
+  size: 24
 });
+
+await composition.add(
+  new core.TextClip({
+    text: "The quick\nbrown fox jumps over the lazy dog.",
+    align: 'center',
+    baseline: 'middle',
+    font: bold,
+    maxWidth: '40%',
+    leading: 1.3,
+    glow: {
+      intensity: 1,
+      color: '#000000',
+      radius: 10,
+      opacity: 100,
+    },
+    stroke: {
+      width: 5,
+      color: '#000000',
+      lineJoin: 'round',
+      lineCap: 'round',
+      miterLimit: 4,
+    },
+    shadow: [
+      {
+        offsetX: 4,
+        offsetY: 5,
+        blur: 20,
+        color: '#000000',
+        opacity: 100,
+      },
+      {
+        offsetX: -8,
+        offsetY: -4,
+        blur: 20,
+        color: '#FFFFFF',
+        opacity: 90,
+      },
+    ],
+    x: '50%',
+    y: '50%',
+    styles: [{
+      start: 0,
+      stop: 9,
+      style: {
+        font: thin,
+        color: '#0000FF',
+        casing: 'upper',
+      }
+    }]
+  })
+);
 ```
+
+With the `styles` property, you can define the styles you want to override for specific sections of the `TextClip`.
+
+---
 
 We have loaded the web font from a predefined set of popular web fonts. You can also use custom web fonts like this:
 
@@ -46,49 +85,15 @@ const roboto = await manager.load({
 });
 ```
 
+or local fonts (in Chrome):
+```typescript
+const local = await core.FontManager.localFonts();
+
+console.log(local);
+
+const font = await manager.load(local[0].variants[0]);
+```
+
 For more examples, see [examples](https://github.com/diffusionstudio/examples/blob/f8bde98c53320b8bcd78a541244fc95ff2b40cbd/showcase/src/compositions/font.ts).
 
 Setting the `align` and `baseline` properties will adjust the anchor point, comparable to the [transform-origin](https://developer.mozilla.org/en-US/docs/Web/CSS/transform-origin) in CSS.
-
-## Rich Text
-
-We have tested various methods to render text with differently styled subsections, such as changing the color of a particular word. While Pixi.js `HTMLText` was a promising solution, the quality of the text did not meet our standards. We ultimately implemented our own solution using foreignObjects. Although visually satisfying, the performance was inadequate for production use. We reverted to a 2D context implementation, resulting in the current state.
-
-```typescript
-const font = await core.FontManager.load({ 
-  family: 'Geologica', 
-  weight: '800',
-});
-
-const text = new RichTextClip({
-  text: 'Complex Text',
-  duration: composition.duration,
-  align: 'center',
-  baseline: 'middle',
-  font,
-  casing: 'upper',
-  fontSize: 18,
-  stroke: {
-    width: 3,
-    color: '#000000',
-  },
-  y: '85%',
-  x: '50%',
-  styles: [{
-    start: 8,
-    style: {
-      color: '#19fa2c'
-    }
-  }],
-});
-```
-
-The `RichTextClip` is derived from the `TextClip`, with the notable addition of`styles` and `maxWidth` properties. The `styles` array allows you to define the styles you want to override for specific sections of the `RichTextClip`. Currently available styles include:
-* `color?: string;`
-* `fontSize?: number;`
-* `stroke?: Stroke;`
-* `font?: Font;`
-
-Each style object requires a `start` index indicating where the section should begin. Optionally, you can specify a `stop` index, with the default being the end of the text.
-
-See it in action [here](https://github.com/diffusionstudio/examples/blob/f8bde98c53320b8bcd78a541244fc95ff2b40cbd/showcase/src/compositions/custom-captions.ts).
