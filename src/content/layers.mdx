@@ -30,7 +30,7 @@ await layer.add(
 await layer.add(
   new core.TextClip({
     text: 'World',
-    delay: 31,
+    delay: 30,
     duration: 60,
   })
 );
@@ -43,7 +43,7 @@ You can render a layer by adding it to a composition:
 ```typescript
 const composition = new core.Composition();
 
-composition.insertLayer(layer);
+await composition.insertLayer(layer);
 ```
 
 > By calling `layer.remove(clip)` you can remove a `Clip` from the `Layer`
@@ -63,9 +63,9 @@ Let's set up an example to illustrate how tracks are layered:
 ```typescript
 // alterantive approach for creating tracks 
 // and adding them to the composition
-const video = composition.createLayer(); 
-const image = composition.createLayer();
-const text = composition.createLayer();
+const video = await composition.createLayer(); 
+const image = await composition.createLayer();
+const text = await composition.createLayer();
 ```
 
 When a layer is added to the composition it will be added to `position 0` and rendered last. When visualized the text layer will be rendered on top of the image layer, which will be rendered on top of all `VideoClip`s inside the video layer.
