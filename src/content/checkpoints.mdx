@@ -1,0 +1,78 @@
+# Checkpoints
+
+Checkpoints allow you to save and restore the state of a composition, making it easy to manage complex projects efficiently.
+
+## Basic Usage
+
+To create a checkpoint, follow these steps:
+
+```typescript
+import * as core from '@diffusionstudio/core';
+
+const composition = new core.Composition();
+
+await composition.add(
+  new core.ImageClip('/image1.png', {
+    height: '100%',
+  })
+);
+
+const checkpoint = await composition.createCheckpoint();
+```
+
+### Note
+
+The checkpoint is JSON-serializable if the image clip is created from an image URL. If using blobs instead, the checkpoint will include the blob.
+
+## Restoring a Checkpoint
+
+To load a previously created checkpoint, use the following:
+
+```typescript
+const composition = new core.Composition();
+await composition.restoreCheckpoint(checkpoint);
+```
+
+### Tip
+
+Restoring a checkpoint multiple times is safe. The algorithm only updates differences between the current state and the checkpoint.
+
+## Restoring Fonts
+
+If your project uses custom fonts, ensure you restore them before restoring the composition.
+
+### Creating a Font Checkpoint
+
+```typescript
+import * as core from '@diffusionstudio/core';
+
+const fontManager = new core.FontManager();
+
+const font = await fontManager.load({
+  family: 'Geologica',
+  weight: '800',
+});
+
+const fontCheckpoint = await fontManager.createCheckpoint();
+
+const composition = new core.Composition();
+const compositionCheckpoint = await composition.createCheckpoint();
+```
+
+### Restoring a Font Checkpoint
+
+```typescript
+const fontManager = new core.FontManager();
+await fontManager.restoreCheckpoint(fontCheckpoint);
+
+const composition = new core.Composition();
+await composition.restoreCheckpoint(compositionCheckpoint);
+```
+
+### Important
+
+Always restore the font manager before restoring the composition.
+
+## Additional Information
+
+Clips and Layers can also be restored from a checkpoint, providing flexibility when managing complex compositions.

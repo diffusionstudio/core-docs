@@ -1,0 +1,43 @@
+# Transitions
+
+Diffusion Studio supports a range of basic transitions that can be applied to `Clip` objects. To apply a transition, both `Clips` must be within the same `Layer`.
+
+## Basic Transitions
+
+### Fade Transition
+
+The `Fade` transition provides a smooth fade-in and fade-out effect between clips.
+
+```typescript
+import * as core from '@diffusionstudio/core';
+
+const layer = composition.createLayer().sequential();
+
+await layer.add(
+  new core.ImageClip('/image1.png', {
+    height: '100%',
+    duration: '3s',
+    transition: {
+      duration: '3s',
+      type: 'dissolve',
+    }
+  })
+);
+
+await layer.add(
+  new core.ImageClip('/image2.png', {
+    height: '100%',
+    duration: '3s',
+  })
+);
+```
+
+### Supported Transitions
+
+The following transitions are available for use:
+
+* `dissolve`: Creates a smooth fade between clips.
+* `slide-from-right`: Slides the next clip from the right.
+* `slide-from-left`: Slides the next clip from the left.
+* `fade-to-black`: Fades the clip to black before transitioning.
+* `fade-to-white`: Fades the clip to white before transitioning.

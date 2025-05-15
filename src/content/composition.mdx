@@ -126,7 +126,7 @@ await composition.add(clip);
 To capture a screenshot of the current frame:
 
 ```typescript
-composition.frame = 30;
+await composition.seek('10s');
 const dataUrl = await composition.screenshot();
 ```
 

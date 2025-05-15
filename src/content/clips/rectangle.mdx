@@ -1,0 +1,30 @@
+# Rectangle Clip
+
+The `RectangleClip` inherits from the `ShapeClip` and implements common visual properties.
+
+## Basic Usage
+
+```typescript
+import * as core from '@diffusionstudio/core';
+
+const rectangle = new core.RectangleClip({
+  position: 'center',
+  fill: '#FF0000',
+  height: 300,
+  width: 300,
+  radius: 10,
+  stroke: {
+    width: 2,
+    color: '#000000',
+  },
+  animations: [
+    {
+      key: 'fill',
+      frames: [
+        { time: 0, value: '#FF0000' },
+        { time: 120, value: '#00FF00' },
+      ],
+    }
+  ]
+})
+```
