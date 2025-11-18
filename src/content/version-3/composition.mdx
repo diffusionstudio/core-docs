@@ -5,10 +5,6 @@ import { Tabs } from 'nextra/components';
 
 A `Composition` object manages the entire state of a video project and serves as the foundation for any video editing tasks in Diffusion Studio. This guide will walk you through setting up and manipulating a `Composition` object.
 
-<Callout type="info">
-  Checkout our [Playground](https://github.com/diffusionstudio/core/tree/main/playground) for more boilerplate code.
-</Callout>
-
 ## Setting Up a Composition
 
 To begin, import the `Composition` class from `@diffusionstudio/core` and create a new instance:
@@ -26,8 +22,7 @@ When constructing a `Composition`, you can pass various options. Here are the de
   height: 1080,
   width: 1920,
   background: '#000000',
-  playbackEndBehavior: 'loop',
-  licenseKey: undefined,
+  playbackEndBehavior: 'loop'
 }
 ```
 
@@ -87,25 +82,44 @@ composition.unmount();
 
 Here are some common state manipulations you might perform on a `Composition`:
 
+### **Setting the Composition Duration**
+
+By default, a `Composition`'s duration is determined by the last visible clip. However, you can assign a fixed duration using the duration setter:
+
+```typescript
+composition.duration = 300; // Sets the duration to 300 frames or 10 seconds
+```
+
 ### **Adding Layers**
+
+For efficient usage, manually manipulate the `Layers` in your `Composition`:
+
+```typescript
+const layer = composition.createLayer();
+```
+
+Alternatively, you can create a `Layer` instance beforehand and then prepend it:
 
 ```typescript
 const layer = new Layer();
-await composition.add(layer);
+// add clips beforehand
+await composition.insertLayer(layer);
 ```
 
-`add` is an asynchronous action because it waits until all contained `Clips` are initialized.
+`insertLayer` is an asynchronous action because it waits until all contained `Clips` are initialized.
 
-> You can remove the layer again by calling `composition.remove(layer)`
+> You can remove the layer again by calling `composition.removeLayer(layer)`
 
 ### **Adding Clips**
 
-Same concept applies to layers, `add` is an asynchronous action because it waits until the `Clip` is initialized.
+The `Composition` offers a convenient method to create a `Layer` and append a `Clip` to it:
 
 ```typescript
 const clip = new VideoClip();
-await layer.add(clip);
+await composition.add(clip);
 ```
+
+`add` is always an asynchronous action because it waits until the `Clip` can be visualized.
 
 ### **Taking Screenshots**
 
@@ -127,13 +141,3 @@ await composition.seek(30);
 ```
 
 > **Hint:** Use the `composition.time()` function to conveniently display the current time of the `Composition`.
-
-### **Playback Position**
-
-To get the current position as a fraction do this:
-
-```typescript
-const position = composition.currentTime / composition.duration;
-```
-
-Whereas both `currentTime` and `duration` are in seconds.

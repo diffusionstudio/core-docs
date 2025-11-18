@@ -1,0 +1,47 @@
+# Introduction
+
+**Core** is a TypeScript library for programmatic video editing using WebCodecs. It runs entirely in the browser and supports headless editing, making it ideal for automating video processing tasks.  
+
+For server-side usage, you can integrate **Core** with **Playwright** or **Puppeteer**. While using a browser for video rendering in a server environment may seem unconventional, Chromium is one of the most sophisticated rendering engines available, making it a powerful choice for this purpose.  
+
+## Installation  
+
+```bash
+npm install @diffusionstudio/core
+```
+
+## Usage  
+
+The engine is commonly used in the following way:
+```ts
+import * as core from '@diffusionstudio/core';
+
+const composition = new core.Composition();
+```  
+
+## Version History  
+
+### v1.x _(Released October 2024)_  
+- Fully open-source (MPL-2.0 license)  
+- Relied on Pixi.js for rendering (resulting in a large library size)  
+- WebGPU support  
+- FFmpeg-compiled demuxer  
+- Limited to short-form content  
+
+### v2.x _(Released February 1, 2025)_  
+- Public npm package with commercial & non-commercial license  
+- Removed Pixi.js, significantly reducing library size  
+- Introduced a custom Canvas 2D renderer  
+- Continued FFmpeg-based demuxing  
+- Still limited to short-form content  
+
+### v3.x _(Released February 18, 2025)_  
+- Public npm package with commercial & non-commercial license  
+- Removed all FFmpeg dependencies  
+- Retained Canvas 2D rendering  
+- Introduced pure TypeScript-based muxers/demuxers  
+- Added support for long-form content  
+
+### v4.x _(Estimated Release: July 2025)_  
+- Public npm package with commercial & non-commercial license  
+- Introducing a custom WebGL2 renderer  

@@ -1,0 +1,70 @@
+import { Callout } from 'nextra/components';
+
+# Caption Clip
+
+A caption clip lets you render subtitles efficiently while using the same memory as a single text clip.
+
+## Caption Clip Source
+
+To create a caption clip you first need a `CaptionSource`, which is typically generated from a transcript.
+
+If your `Transcript` lives in a remote JSON file you can load it like this:
+```typescript
+const source = await core.Source.from<core.CaptionSource>('/captions.json');
+```
+
+Your JSON should follow this structure:
+
+```typescript
+type Transcript = {
+  text: string;
+  words: {
+    text: string;
+    start: number;
+    end: number;
+  }[];
+}[];
+```
+
+The start and end values are timestamps in seconds.
+
+You can also create a `CaptionSource` from an in memory object:
+
+```typescript
+const transcript: core.Transcript = [/** Assume this contains your transcript */];
+const blob = new Blob([JSON.stringify(transcript)]);
+const file = new File([blob], 'transcript.json', { type: 'application/json' });
+const source = await core.Source.from<core.CaptionSource>(file);
+
+// The source will use 'transcript.json' as its name
+```
+
+Once you have a source you can create a caption clip:
+
+```typescript
+const clip = new core.CaptionClip(source);
+const layer = await composition.add(new core.Layer());
+await layer.add(clip);
+```
+
+Customizing the Appearance
+
+You can choose from several built in presets:
+- `ClassicCaptionPreset`
+- `CascadeCaptionPreset`
+- `PaperCaptionPreset`
+- `GuineaCaptionPreset`
+- `SolarCaptionPreset`
+- `WhisperCaptionPreset`
+
+Usage example:
+
+```typescript
+const clip = new core.CaptionClip(source, {
+  preset: new core.PaperCaptionPreset(),
+});
+```
+
+<Callout type="default">
+Caption Clips behave like Audio Clips, you can apply time ranges to slice them. For example: `clip.range = [0.5, 4]`.
+</Callout>

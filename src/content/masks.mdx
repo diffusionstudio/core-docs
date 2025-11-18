@@ -1,44 +1,155 @@
 # Masks
 
-Masks are essential tools to crop, hide, or emphasize specific parts of your video. Here, we will demonstrate how to use the `RectangleMask` and how to apply it to a video clip.
+Masks are essential tools to crop, hide, or emphasize specific parts of your clips. They define a visible region where content can be displayed, allowing you to create creative effects like picture-in-picture, rounded corners, circular crops, and more.
 
 ## What is a Mask?
 
-A mask defines a specific region within a composition where content can be displayed. It is a powerful feature to control visibility and apply creative effects. This guide will focus on the `RectangleMask`, but similar principles apply to other masks like `CircleMask`.
+A mask defines a specific region within a composition where content can be displayed. Everything outside the mask region is hidden. Masks are applied to clips and work with any visual clip type including `VideoClip`, `ImageClip`, `TextClip`, and shape clips.
 
-## Example: Using `RectangleMask`
+## Available Mask Types
 
-To get started, we will create a composition, define a `RectangleMask`, and apply it to a video clip.
+There are two mask types available:
 
-### Code Example
+- **`RectangleMask`** - Rectangular masks with optional rounded corners
+- **`EllipseMask`** - Elliptical/circular masks
+
+## RectangleMask
+
+The `RectangleMask` creates rectangular mask regions. It's perfect for cropping content to specific rectangular areas or creating rounded corner effects.
+
+### Basic Example
 
 ```typescript
 import * as core from '@diffusionstudio/core';
-// Step 1: Create a composition
+
 const composition = new core.Composition();
 
-// Step 2: Define a RectangleMask
+// Create a RectangleMask
 const mask = new core.RectangleMask({
-  x: 480, // Horizontal offset
-  y: 0,   // Vertical offset
+  x: 480,                    // Horizontal offset from left
+  y: 0,                      // Vertical offset from top
   width: composition.width - 960, // Mask width
   height: composition.height,     // Mask height
-  radius: 100,                    // Corner radius for rounded edges
+  radius: 100,               // Corner radius for rounded edges
 });
 
-// Step 3: Add a video clip with the mask applied
-await composition.add(
-  new core.VideoClip(new File([], 'sample.mp4'), {
-    position: 'center', // Center the video in the composition
-    muted: true,        // Mute the video
-    mask,               // Apply the mask
-    height: '100%',     // Set the height of the video
-  })
+// Load a video source
+const source = await core.Source.from<core.VideoSource>(
+  'https://example.com/video.mp4'
 );
+
+// Apply the mask to a video clip
+const videoClip = new core.VideoClip(source, {
+  position: 'center',
+  mask,                      // Apply the mask
+  height: '100%',
+});
+
+const layer = await composition.add(new core.Layer());
+await layer.add(videoClip);
+```
+
+### Using RectangleMask with Images
+
+Masks work with any visual clip type. Here's an example with an `ImageClip`:
+
+```typescript
+const imageSource = await core.Source.from<core.ImageSource>(
+  'https://example.com/image.jpg'
+);
+
+const imageClip = new core.ImageClip(imageSource, {
+  position: 'center',
+  width: '100%',
+  height: '100%',
+  mask: new core.RectangleMask({
+    x: '10%',                // Percentage-based positioning
+    y: '10%',
+    width: '80%',
+    height: '80%',
+    radius: 50,              // Rounded corners
+  }),
+});
 ```
 
 ### Key Parameters
 
-- **`x` and `y`**: Define the top-left corner of the mask.
-- **`width` and `height`**: Set the size of the mask relative to the composition.
-- **`radius`**: Adds rounded corners to the mask.
+- **`x` and `y`**: Define the top-left corner position of the mask. Can be pixel values or percentage strings (e.g., `'10%'`).
+- **`width` and `height`**: Set the size of the mask. Can be pixel values or percentage strings.
+- **`radius`**: Adds rounded corners to the mask. Set to `0` for sharp corners.
+
+## EllipseMask
+
+The `EllipseMask` creates elliptical or circular mask regions. Use it for circular crops, vignette effects, or organic shapes.
+
+### Basic Example
+
+```typescript
+// Create a circular mask
+const circularMask = new core.EllipseMask({
+  x: composition.width / 2,  // Center horizontally
+  y: composition.height / 2, // Center vertically
+  width: 800,                // Diameter (width)
+  height: 800,               // Diameter (height)
+});
+
+// Apply to a video clip
+const videoClip = new core.VideoClip(source, {
+  position: 'center',
+  mask: circularMask,
+  height: '100%',
+});
+```
+
+### Creating a Vignette Effect
+
+You can use an `EllipseMask` to create a vignette effect by masking the edges:
+
+```typescript
+const vignetteMask = new core.EllipseMask({
+  x: composition.width / 2,
+  y: composition.height / 2,
+  width: composition.width * 1.2,   // Larger than composition
+  height: composition.height * 1.2,
+});
+
+const imageClip = new core.ImageClip(imageSource, {
+  position: 'center',
+  width: '100%',
+  height: '100%',
+  mask: vignetteMask,
+});
+```
+
+### Key Parameters
+
+- **`x` and `y`**: Define the center position of the ellipse.
+- **`width` and `height`**: Set the diameter of the ellipse. For a perfect circle, use equal values.
+
+## Common Use Cases
+
+### Picture-in-Picture
+
+Create a picture-in-picture effect by masking a smaller video in the corner:
+
+```typescript
+const pipMask = new core.RectangleMask({
+  x: composition.width - 400, // Right side
+  y: composition.height - 300, // Bottom
+  width: 360,
+  height: 240,
+  radius: 10,
+});
+
+const pipVideo = new core.VideoClip(pipSource, {
+  position: 'center',
+  mask: pipMask,
+  width: 400,
+  height: 300,
+});
+```
+
+## Tips
+
+- **Mask positioning**: Masks are positioned relative to the composition, not the clip. The clip's `position` property still affects where the clip is placed, but the mask defines the visible area.
+- **Combining with animations**: Masks can be combined with clip animations for dynamic masking effects.

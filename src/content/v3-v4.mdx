@@ -1,0 +1,563 @@
+# V3 to V4 Migration Guide
+
+This guide will help you migrate your code from Diffusion Studio Core v3 to v4. The changes are organized by category to make the migration process as smooth as possible.
+
+## Table of Contents
+
+- [Required Headers](#required-headers)
+- [Composition Changes](#composition-changes)
+- [Layer Management](#layer-management)
+- [Clip API Changes](#clip-api-changes)
+- [Removed Clips](#removed-clips)
+- [Renamed Clips and Masks](#renamed-clips-and-masks)
+- [Rendering Changes](#rendering-changes)
+- [Events](#events)
+- [Checkpoints](#checkpoints)
+- [Font Management](#font-management)
+- [Timestamps and Transcripts](#timestamps-and-transcripts)
+- [Keyframe Animations](#keyframe-animations)
+- [Text Clip Properties](#text-clip-properties)
+
+## Required Headers
+
+> **Important:** v4 requires specific HTTP headers to be configured for proper operation. These headers enable SharedArrayBuffer and other advanced browser APIs needed for video processing.
+
+You must configure your development server and production environment to set these headers:
+- `Cross-Origin-Opener-Policy: same-origin`
+- `Cross-Origin-Embedder-Policy: credentialless`
+
+For more examples and production deployment configurations, see the [Required Headers section](/docs) in the main documentation.
+
+## Composition Changes
+
+### License Key
+
+The `Composition` constructor now accepts a `licenseKey` option:
+
+```typescript
+// v4
+const composition = new core.Composition({
+  licenseKey: "your-license-key",
+});
+```
+
+### Removed Duration Property
+
+The `duration` property has been removed from `Composition`. The duration is now automatically determined by the last visible clip.
+
+```typescript
+// v3
+composition.duration = 300; // ❌ No longer available
+```
+
+### Removed Methods
+
+Several composition methods have been removed or renamed:
+
+```typescript
+// v3
+const layer = composition.createLayer(); // ❌ Removed
+composition.removeLayer(layer); // ❌ Renamed
+await composition.insertLayer(layer); // ❌ Removed
+composition.createCaptions(); // ❌ Removed
+
+// v4
+const layer = new core.Layer(); // Create layer directly
+await composition.add(layer); // Use add() instead
+composition.remove(layer); // Renamed from removeLayer()
+```
+
+## Layer Management
+
+### Creating and Adding Layers
+
+The workflow for creating and adding layers has changed:
+
+```typescript
+// v3
+const layer = composition.createLayer();
+// or
+const layer = new core.Layer();
+await composition.insertLayer(layer);
+
+// v4
+const layer = new core.Layer();
+await composition.add(layer);
+```
+
+### Layer Index
+
+The `index` method has been replaced with a property:
+
+```typescript
+// v3
+layer.index(0); // Method call
+layer.index('top');
+
+// v4
+layer.index = 0; // Property assignment
+layer.index = 'top';
+```
+
+### Sequential Mode
+
+Sequential mode is now configured via constructor options:
+
+```typescript
+// v3
+layer.sequential(); // Enable
+layer.sequential(false); // Disable
+
+// v4
+const layer = new core.Layer({
+  mode: 'SEQUENTIAL',
+});
+// To disable
+layer.mode = 'DEFAULT';
+```
+
+## Clip API Changes
+
+### Stop/End Property
+
+The `stop` property has been renamed to `end`:
+
+```typescript
+// v3
+clip.stop; // ❌ No longer available
+layer.stop; // ❌ No longer available
+
+// v4
+clip.end; // ✅ Use end instead
+```
+
+### Subclip to Range
+
+The `subclip()` method has been replaced with a `range` property:
+
+```typescript
+// v3
+clip.subclip(0, 180); // Trim from start to end frames
+clip.subclip(420); // Trim from frame 420 to end
+
+// v4
+clip.range = [0, 180]; // Range in seconds: [start, end]
+clip.range = [14, 16]; // Range in seconds (assuming 30fps: 420/30 = 14s)
+```
+
+### Offset to Delay
+
+The `offset()` method has been replaced with direct `delay` manipulation:
+
+```typescript
+// v3
+clip.offset(-30); // Time offset in frames
+clip.offset(-15);
+
+// v4
+clip.delay += -1; // Delay in seconds (assuming 30fps: -30/30 = -1s)
+clip.delay += -0.5; // Delay in seconds (assuming 30fps: -15/30 = -0.5s)
+```
+
+> **Note:** In v4, timing is now in seconds instead of frames. Convert your frame values to seconds by dividing by the frame rate (typically 30fps).
+
+## Removed Clips
+
+### HTML Clip
+
+The `HTMLClip` has been completely removed:
+
+```typescript
+// v3
+const htmlClip = new core.HTMLClip({ html: '<div>...</div>' }); // ❌ Removed
+
+// v4
+// HTML clips are no longer supported
+// Consider using ImageClip with pre-rendered HTML as an image
+```
+
+### Waveform Clip
+
+The `WaveformClip` has been removed:
+
+```typescript
+// v3
+const waveform = new core.WaveformClip(audioSource); // ❌ Removed
+
+// v4
+// Waveform clips are no longer available
+// You can create custom waveform visualizations using CustomClip
+```
+
+## Renamed Clips and Masks
+
+### CircleClip to EllipseClip
+
+```typescript
+// v3
+const circle = new core.CircleClip({
+  position: 'center',
+  width: '50%',
+  height: '50%',
+  fill: '#FF0000',
+});
+
+// v4
+const ellipse = new core.EllipseClip({
+  position: 'center',
+  width: '50%',
+  height: '50%',
+  fill: '#FF0000',
+});
+```
+
+### CircleMask to EllipseMask
+
+```typescript
+// v3
+const mask = new core.CircleMask({
+  x: 100,
+  y: 100,
+  width: 200,
+  height: 200,
+});
+
+// v4
+const mask = new core.EllipseMask({
+  x: 100,
+  y: 100,
+  width: 200,
+  height: 200,
+});
+```
+
+## Rendering Changes
+
+### Encoder.render() Return Value
+
+The `render()` method no longer directly returns a `Blob`. It now returns a result object:
+
+```typescript
+// v3
+const blob = await encoder.render(); // Directly returns Blob
+
+// v4
+const res = await encoder.render();
+core.assert(res.type == 'success');
+const blob = res.data; // Extract the Blob from the result
+```
+
+### Cancelling Export
+
+The abort signal approach has been replaced with a `cancel()` method:
+
+```typescript
+// v3
+const controller = new AbortController();
+encoder.render(fileHandle, controller.signal);
+controller.abort();
+
+// v4
+encoder.render(fileHandle);
+encoder.cancel(); // Use cancel() method instead
+```
+
+### Progress Tracking
+
+Progress tracking is now available via an event handler:
+
+```typescript
+// v4 (new feature)
+encoder.onProgress = (event) => {
+  const { progress, total } = event;
+  console.log(Math.round(progress * 100 / total) + '%');
+};
+```
+
+## Events
+
+Composition event names have been updated to use a namespaced format:
+
+```typescript
+// v3
+composition.on('currentframe', (event) => {
+  console.log(event.detail);
+});
+composition.on('play', console.log);
+composition.on('pause', console.log);
+
+// v4
+composition.on('playback:time', (time: number | undefined) => {
+  console.log('Current playback time:', time);
+});
+composition.on('playback:start', () => {
+  console.log('Playback started');
+});
+composition.on('playback:end', () => {
+  console.log('Playback ended');
+});
+```
+
+## Checkpoints
+
+### Restore Checkpoint Requires Assets
+
+The `restoreCheckpoint()` method now requires assets to be passed separately:
+
+```typescript
+// v3
+await composition.restoreCheckpoint(checkpoint);
+
+// v4
+// First, serialize your sources
+const sources = await Promise.all([
+  core.Source.from<core.ImageSource>('/image1.png'),
+  core.Source.from<core.VideoSource>('/video1.mp4'),
+]);
+const assets = core.serializeSources(sources);
+
+// Then restore with both checkpoint and assets
+await composition.restoreCheckpoint(checkpoint, assets);
+```
+
+### Complete Checkpoint Workflow
+
+```typescript
+// v4 - Complete example
+// Step 1: Create sources
+const sources = await Promise.all([
+  core.Source.from<core.ImageSource>('https://example.com/image.png'),
+  core.Source.from<core.VideoSource>('https://example.com/video.mp4'),
+]);
+
+// Step 2: Create composition and add clips
+const composition = new core.Composition();
+const layer = await composition.add(new core.Layer());
+await layer.add(new core.ImageClip(sources[0], { height: '100%' }));
+
+// Step 3: Serialize sources and create checkpoint
+const assets = core.serializeSources(sources);
+const checkpoint = await composition.createCheckpoint();
+
+// Step 4: Save to storage
+localStorage.setItem('project-checkpoint', JSON.stringify(checkpoint));
+localStorage.setItem('project-assets', JSON.stringify(assets));
+
+// Step 5: Restore from storage
+const savedCheckpoint = JSON.parse(localStorage.getItem('project-checkpoint'));
+const savedAssets = JSON.parse(localStorage.getItem('project-assets'));
+
+const restoredComposition = new core.Composition();
+await restoredComposition.restoreCheckpoint(savedCheckpoint, savedAssets);
+```
+
+## Font Management
+
+The `FontManager` class has been removed and replaced with direct functions:
+
+```typescript
+// v3
+const fontManager = new core.FontManager();
+const font = await fontManager.load({
+  family: 'Geologica',
+  weight: '800',
+});
+const fontCheckpoint = await fontManager.createCheckpoint();
+await fontManager.restoreCheckpoint(fontCheckpoint);
+
+// v4
+const font = await core.loadFont({
+  family: 'Geologica',
+  weight: '800',
+});
+
+// Getting and restoring fonts
+const loadedFonts = await core.getLoadedFonts(); // JSON serializable array
+await core.restoreFonts(loadedFonts);
+```
+
+### Local Fonts
+
+```typescript
+// v3
+const local = await core.FontManager.localFonts();
+const font = await manager.load(local[0].variants[0]);
+
+// v4
+const localFonts = await core.getLocalFonts();
+const font = await core.loadFont(localFonts[0].variants[0]);
+```
+
+## Timestamps and Transcripts
+
+### Timestamp Object Removed
+
+The `Timestamp` object has been completely removed. All time values are now in seconds:
+
+```typescript
+// v3
+const timestamp = new core.Timestamp(milliseconds, seconds, minutes, hours);
+timestamp.frames;  // 30
+timestamp.millis;  // 1000
+timestamp.seconds; // 1
+new core.ImageClip({ duration: timestamp });
+
+// v4
+// Use seconds directly
+const clip = new core.ImageClip({ duration: 5 }); // 5 seconds
+
+clip.duration; // 5 seconds
+```
+
+### Transcript Replaced with CaptionSource
+
+The `Transcript` class has been replaced with `CaptionSource`:
+
+```typescript
+// v3
+const transcript = core.Transcript.from(captions);
+const transcript = await core.Transcript.from('https://.../captions.json');
+transcript.optimize();
+transcript.toSRT();
+transcript.slice(20);
+for (const group of transcript.iter({ count: [2] })) {
+  // ...
+}
+
+// v4
+// Create a CaptionSource from a transcript JSON file
+const source = await core.Source.from<core.CaptionSource>('/captions.json');
+
+// Use CaptionSource methods
+const wpm = source.computeWpm();
+const groups = source.groupBy({ count: 2 });
+const srt = source.toSrt();
+source.optimize();
+
+// Create a CaptionClip from the source
+const clip = new core.CaptionClip(source);
+```
+
+### Caption Clip
+
+Caption clips are now created from `CaptionSource`:
+
+```typescript
+// v4
+const source = await core.Source.from<core.CaptionSource>('/captions.json');
+const clip = new core.CaptionClip(source, {
+  preset: new core.PaperCaptionPreset(),
+});
+```
+
+## Keyframe Animations
+
+Keyframe timing has changed from frames to seconds:
+
+```typescript
+// v3
+animations: [
+  {
+    key: 'x',
+    frames: [
+      { time: 80, value: 960 },  // Frame 80
+      { time: 120, value: 50 },   // Frame 120
+    ],
+  },
+]
+
+// v4
+animations: [
+  {
+    key: 'x',
+    frames: [
+      { time: 2.5, value: 960 },  // 2.5 seconds (assuming 30fps: 80/30)
+      { time: 4, value: 50 },     // 4 seconds (assuming 30fps: 120/30)
+    ],
+  },
+]
+```
+
+> **Note:** Convert frame values to seconds by dividing by your frame rate (typically 30fps).
+
+## Text Clip Properties
+
+Some text clip properties have been renamed:
+
+```typescript
+// v3
+new core.TextClip({
+  stroke: {
+    width: 5,
+    color: '#000000',
+  },
+  shadow: [
+    {
+      offsetX: 4,
+      offsetY: 5,
+      blur: 20,
+      color: '#000000',
+      opacity: 100,
+    },
+  ],
+});
+
+// v4
+new core.TextClip({
+  strokes: [{  // Now plural (array)
+    width: 5,
+    color: '#000000',
+  }],
+  shadows: [  // Now plural
+    {
+      offsetX: 4,
+      offsetY: 5,
+      blur: 20,
+      color: '#000000',
+      opacity: 100,
+    },
+  ],
+});
+```
+
+## Sources
+
+v4 introduces a new `Source` API for managing assets. Clips now require sources instead of direct file inputs:
+
+```typescript
+// v3
+const clip = new core.VideoClip(new File([], 'video.mp4'));
+
+// v4
+const source = await core.Source.from<core.VideoSource>('https://example.com/video.mp4');
+const clip = new core.VideoClip(source, { range: [0, 10] });
+```
+
+Sources can be shared between multiple clips for efficient memory usage:
+
+```typescript
+// v4
+const source = await core.Source.from<core.VideoSource>('https://example.com/video.mp4');
+
+// Create multiple clips from the same source
+const clip1 = new core.VideoClip(source, { range: [0, 5] });
+const clip2 = new core.VideoClip(source, { range: [10, 15] });
+const clip3 = new core.VideoClip(source, { range: [20, 25] });
+```
+
+## Summary of Breaking Changes
+
+1. ✅ **Composition**: Added `licenseKey` option, removed `duration`, `createLayer()`, `insertLayer()`, `createCaptions()`
+2. ✅ **Layers**: `index()` → `index` property, `removeLayer()` → `remove()`
+3. ✅ **Clips**: `stop` → `end`, `subclip()` → `range`, `offset()` → `delay`
+4. ✅ **Removed**: `HTMLClip`, `WaveformClip`
+5. ✅ **Renamed**: `CircleClip` → `EllipseClip`, `CircleMask` → `EllipseMask`
+6. ✅ **Rendering**: `render()` returns result object, `cancel()` replaces abort signal
+7. ✅ **Events**: `currentframe` → `playback:time`, `play` → `playback:start`, `pause` → `playback:end`
+8. ✅ **Checkpoints**: Requires separate `assets` parameter
+9. ✅ **Fonts**: `FontManager` → `core.loadFont()`, `core.getLoadedFonts()`, `core.restoreFonts()`
+10. ✅ **Timestamps**: Removed `Timestamp` object, use seconds directly
+11. ✅ **Transcripts**: `Transcript` → `CaptionSource` and `CaptionClip`
+12. ✅ **Animations**: Frame-based timing → second-based timing
+13. ✅ **Text Clips**: `stroke` → `strokes[]`, `shadow` → `shadows[]`
+14. ✅ **Sources**: New `Source` API required for all media assets

@@ -1,78 +1,145 @@
 # Checkpoints
 
-Checkpoints allow you to save and restore the state of a composition, making it easy to manage complex projects efficiently.
+Checkpoints allow you to save and restore the complete state of a composition, including all layers, clips, and their configurations. This makes it easy to persist project state, implement undo/redo functionality, or save and load projects efficiently.
 
-## Basic Usage
+## Creating a Checkpoint
 
-To create a checkpoint, follow these steps:
+To create a checkpoint, first set up your composition with layers and clips, then call `createCheckpoint()`:
 
 ```typescript
 import * as core from '@diffusionstudio/core';
 
+// Create and configure your composition
+const sources = await Promise.all([
+  core.Source.from<core.ImageSource>('/image1.png'),
+  core.Source.from<core.VideoSource>('/video1.mp4'),
+]);
+
 const composition = new core.Composition();
+const layer0 = await composition.add(new core.Layer());
+const layer1 = await composition.add(new core.Layer());
 
-await composition.add(
-  new core.ImageClip('/image1.png', {
-    height: '100%',
-  })
-);
+await layer0.add(new core.ImageClip(sources[0], { height: '100%' }));
+await layer1.add(new core.VideoClip(sources[1], { range: [0, 10] }));
 
+// Create a checkpoint of the current state
 const checkpoint = await composition.createCheckpoint();
 ```
 
-### Note
+The checkpoint is a JSON-serializable object that captures the entire composition state. You can store it in a database, send it over a network, or save it to local storage.
 
-The checkpoint is JSON-serializable if the image clip is created from an image URL. If using blobs instead, the checkpoint will include the blob.
+> **Note:** If your clips use sources created from URLs, the checkpoint will be fully JSON-serializable. If you use blobs or file handles, the checkpoint will include the blob data, which may increase its size.
 
 ## Restoring a Checkpoint
 
-To load a previously created checkpoint, use the following:
+To restore a previously created checkpoint, you need both the checkpoint data and the serialized sources. The sources must be serialized separately using `serializeSources()`:
 
 ```typescript
+// Serialize sources before creating the checkpoint
+const assets = core.serializeSources(sources);
+
+// Later, restore the composition from the checkpoint
 const composition = new core.Composition();
-await composition.restoreCheckpoint(checkpoint);
+await composition.restoreCheckpoint(checkpoint, assets);
 ```
 
-### Tip
+The `assets` parameter is required and must contain the serialized sources that were used when the checkpoint was created. This separation allows you to manage assets independently from the composition state.
 
-Restoring a checkpoint multiple times is safe. The algorithm only updates differences between the current state and the checkpoint.
+> **Tip:** Restoring a checkpoint multiple times is safe. The algorithm efficiently updates only the differences between the current state and the checkpoint, making it performant even for large compositions.
 
-## Restoring Fonts
+## Complete Workflow Example
 
-If your project uses custom fonts, ensure you restore them before restoring the composition.
-
-### Creating a Font Checkpoint
+Here's a complete example showing how to save and restore a project:
 
 ```typescript
 import * as core from '@diffusionstudio/core';
 
-const fontManager = new core.FontManager();
+// Step 1: Create and configure the composition
+const sources = await Promise.all([
+  core.Source.from<core.ImageSource>('https://example.com/image.png'),
+  core.Source.from<core.VideoSource>('https://example.com/video.mp4'),
+]);
 
-const font = await fontManager.load({
-  family: 'Geologica',
-  weight: '800',
-});
+const composition = new core.Composition({ width: 1920, height: 1080 });
+const layer0 = await composition.add(new core.Layer());
+const layer1 = await composition.add(new core.Layer());
 
-const fontCheckpoint = await fontManager.createCheckpoint();
+await layer0.add(new core.ImageClip(sources[0], { height: '100%' }));
+await layer1.add(new core.VideoClip(sources[1], { range: [0, 10] }));
 
-const composition = new core.Composition();
-const compositionCheckpoint = await composition.createCheckpoint();
+// Step 2: Serialize sources and create checkpoint
+const assets = core.serializeSources(sources);
+const checkpoint = await composition.createCheckpoint();
+
+// Step 3: Save to storage (e.g., localStorage, database, etc.)
+localStorage.setItem('project-checkpoint', JSON.stringify(checkpoint));
+localStorage.setItem('project-assets', JSON.stringify(assets));
+
+// Step 4: Later, restore from storage
+const savedCheckpoint = JSON.parse(localStorage.getItem('project-checkpoint'));
+const savedAssets = JSON.parse(localStorage.getItem('project-assets'));
+
+const restoredComposition = new core.Composition();
+await restoredComposition.restoreCheckpoint(savedCheckpoint, savedAssets);
 ```
 
-### Restoring a Font Checkpoint
+## Restoring Fonts
+
+If your composition uses custom fonts, you must restore them before restoring the composition checkpoint. Fonts are managed separately from the composition state.
+
+### Saving Fonts
+
+To save the current font state:
 
 ```typescript
-const fontManager = new core.FontManager();
-await fontManager.restoreCheckpoint(fontCheckpoint);
-
-const composition = new core.Composition();
-await composition.restoreCheckpoint(compositionCheckpoint);
+const loadedFonts = await core.getLoadedFonts(); // Returns a JSON-serializable array
 ```
 
-### Important
+### Restoring Fonts
 
-Always restore the font manager before restoring the composition.
+To restore fonts before restoring the composition:
 
-## Additional Information
+```typescript
+// Restore fonts first
+await core.restoreFonts(loadedFonts);
 
-Clips and Layers can also be restored from a checkpoint, providing flexibility when managing complex compositions.
+// Then restore the composition
+await composition.restoreCheckpoint(checkpoint, assets);
+```
+
+> **Important:** Always restore fonts before restoring the composition. If fonts are not restored first, text clips may not render correctly.
+
+## Restoring Individual Components
+
+You can also restore individual clips or layers from a checkpoint, providing flexibility when managing complex compositions:
+
+```typescript
+// Restore a specific layer
+const layer = new core.Layer();
+await layer.restoreCheckpoint(layerCheckpoint, assets);
+
+// Restore a specific clip
+const clip = new core.ImageClip();
+await clip.restoreCheckpoint(clipCheckpoint, assets);
+```
+
+This is useful when you need to update only specific parts of a composition without restoring the entire state.
+
+## Best Practices
+
+- **Serialize sources separately**: Always use `serializeSources()` to create the assets object before creating a checkpoint. This allows you to manage assets independently.
+
+- **Store assets efficiently**: Consider storing large assets (like video files) separately from the checkpoint JSON, especially if using blobs.
+
+- **Restore fonts first**: If your project uses custom fonts, always restore them before restoring the composition.
+
+- **Handle errors**: When restoring from external storage, wrap the restore operation in a try-catch block to handle potential errors gracefully.
+
+```typescript
+try {
+  await composition.restoreCheckpoint(checkpoint, assets);
+} catch (error) {
+  console.error('Failed to restore checkpoint:', error);
+  // Handle the error appropriately
+}
+```

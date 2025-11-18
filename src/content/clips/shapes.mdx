@@ -1,0 +1,94 @@
+# Shapes
+
+There are three shape clip types available:
+- `RectangleClip` - rectangular shapes with optional rounded corners
+- `EllipseClip` - elliptical shapes
+- `PolygonClip` - regular polygons with configurable sides
+
+All shape clips share common properties like `fill`, `strokes`, `position`, `width`, `height`, and support animations and effects.
+
+> **Ordering matters:** Properties are applied in order. The value of `keepAspectRatio` affects how subsequent size properties (like `width` and `height`) are interpreted, so you typically want to set `keepAspectRatio` before size assignments.
+
+## RectangleClip
+
+The `RectangleClip` creates rectangular shapes with optional rounded corners. It's useful for backgrounds, borders, and geometric shapes.
+
+```typescript
+import * as core from '@diffusionstudio/core';
+
+const rectangle = new core.RectangleClip({
+  position: 'center',
+  keepAspectRatio: true,
+  width: 300,
+  height: 200,
+  fill: '#FF0000',
+  radius: 10, // Rounded corners
+  strokes: [
+    {
+      width: 2,
+      color: '#000000',
+    },
+  ],
+  animations: [
+    {
+      key: 'fill',
+      frames: [
+        { time: 0, value: '#FF0000' },
+        { time: 120, value: '#00FF00' },
+      ],
+    },
+  ],
+});
+```
+
+## EllipseClip
+
+The `EllipseClip` creates elliptical shapes with independent width and height. It supports advanced positioning and transformation properties.
+
+```typescript
+const ellipse = new core.EllipseClip({
+  fill: '#FF0000',
+  blendMode: 'screen',
+  height: 800,
+  width: 300,
+  anchorX: 0, // Origin point (0-1 or pixel value)
+  anchorY: 0, // Origin point (0-1 or pixel value)
+  rotation: 45, // Rotation in degrees
+  effects: [
+    {
+      type: 'drop-shadow',
+      value: {
+        offsetX: -9,
+        offsetY: 9,
+        blur: 3,
+        color: '#000000',
+      },
+    },
+  ],
+});
+```
+
+The `anchorX` and `anchorY` properties control the origin point of the clip. This affects how the clip is positioned, scaled, and rotated. Values can be between 0 and 1 (relative) or pixel values (absolute).
+
+## PolygonClip
+
+The `PolygonClip` creates regular polygons with a configurable number of sides. Use it to create triangles, hexagons, octagons, and other regular shapes.
+
+```typescript
+const polygon = new core.PolygonClip({
+  x: '50%',
+  y: '50%',
+  fill: '#FFFF00',
+  sides: 6, // Creates a hexagon
+  width: 200,
+  height: 200,
+  rotation: 30, // Optional rotation
+});
+```
+
+Common `sides` values:
+- `3` - Triangle
+- `4` - Square (though `RectangleClip` is more appropriate)
+- `5` - Pentagon
+- `6` - Hexagon
+- `8` - Octagon

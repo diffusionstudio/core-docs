@@ -14,19 +14,19 @@ The method receives `props` as arguments, and you must always call `super(props)
 
 ### Init
 
-The `init(): Promise<void>` method is called before the `Clip` is added to a track/composition. This makes it the ideal place for I/O operations, such as fetching assets or loading buffers.
+The `init(audio: AudioRenderer): Promise<void>` method is called before the `Clip` is added to a track/composition. This makes it the ideal place for I/O operations, such as fetching assets or loading buffers.
 
 ### Enter
 
-This method is triggered right before the `Clip` is drawn to the canvas. Use `enter(renderer: Renderer): Promise<void>` to perform any actions that need to be executed once, rather than on every render cycle.
+This method is triggered right before the `Clip` is drawn to the canvas. Use `enter(audio: AudioRenderer): Promise<void>` to perform any actions that need to be executed once, rather than on every render cycle.
 
 ### Update
 
-The `update(renderer: Renderer): Promise<void>` method is called on every redraw of the clip. You can use it to implement time-based state changes.
+The `update(audio: AudioRenderer): Promise<void>` method is called on every redraw of the clip. You can use it to implement time-based state changes.
 
 ### Render
 
-The `render(renderer: Renderer): void` method is called on every redraw of the clip. It receives a `Renderer`, which you can use to visualize the clip.
+The `render(video: VideoRenderer): void` method is called on every redraw of the clip. It receives a `VideoRenderer`, which you can use to visualize the clip.
 
 ### Exit
 
@@ -47,7 +47,7 @@ interface AlienClipProps extends core.ClipProps {
 // Create a new class extending `Clip` and apply your custom properties
 class AlienClip extends core.Clip {
   // Declare custom fields
-  public speed = 10;
+  public speed = 0.2;
   public image = new Image();
 
   private angle = 0;
@@ -73,23 +73,22 @@ class AlienClip extends core.Clip {
   }
 
   // Update the clip's state on each frame. Receives a `Timestamp` argument.
-  public override async update(renderer: core.Renderer): Promise<void> {
+  public override async update(audio: core.AudioRenderer): Promise<void> {
     // This can be useful for computationally expensive operations.
 
     // Adjust the sprite's angle based on elapsed time and configured speed
-    this.angle = renderer.playbackTime * this.speed;
+    this.angle = audio.playbackFrame * this.speed;
   }
 
-  public override render(renderer: core.Renderer): void {
-    const ctx = renderer.videoCtx;
-    const x = renderer.width / 2;
-    const y = renderer.height / 2;
+  public override render(video: core.VideoRenderer): void {
+    const x = video.width / 2;
+    const y = video.height / 2;
 
-    ctx.save();
-    ctx.translate(x, y);
-    ctx.rotate(this.angle);
-    ctx.drawImage(this.image, -this.image.width / 2, -this.image.height / 2);
-    ctx.restore();
+    video.context.save();
+    video.context.translate(x, y);
+    video.context.rotate(this.angle);
+    video.context.drawImage(this.image, -this.image.width / 2, -this.image.height / 2);
+    video.context.restore();
   }
 
   // Exit phase: invoked when the clip is no longer needed
@@ -107,6 +106,5 @@ To include this `AlienClip` in a composition, you can do the following:
 const composition = new core.Composition();
 
 // Add the custom AlienClip to the composition
-const layer = await composition.add(new core.Layer());
-await layer.add(new AlienClip({ speed: 0.4, duration: 150 }));
+await composition.add(new AlienClip({ speed: 0.4, duration: 150 }));
 ```

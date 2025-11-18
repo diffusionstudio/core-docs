@@ -1,0 +1,159 @@
+# Source
+
+Sources are used to load and cache assets for clips. They prepare media files for rendering and can be shared between multiple clips, allowing you to efficiently reuse the same asset across your composition without loading it multiple times.
+
+## Creating a Source
+
+Sources can be created from various input types: files, blobs, `FileSystemFileHandle`s, or external URLs.
+
+### From a URL
+
+```typescript
+const source = await core.Source.from<core.VideoSource>('https://example.com/video.mp4');
+```
+
+### From a File
+
+```typescript
+const fileInput = document.querySelector('input[type="file"]').files[0];
+const source = await core.Source.from<core.VideoSource>(fileInput);
+```
+
+### From a Blob
+
+```typescript
+const blob = new Blob([/* your data */], { type: 'video/mp4' });
+const source = await core.Source.from<core.VideoSource>(blob);
+```
+
+### From a FileSystemFileHandle
+
+```typescript
+const fileHandle = await window.showOpenFilePicker();
+const source = await core.Source.from<core.VideoSource>(fileHandle[0]);
+```
+
+### MIME Type Hint
+
+For faster initialization, you can provide a MIME type hint. This helps the engine identify the source type without needing to inspect the file:
+
+```typescript
+const source = await core.Source.from<core.VideoSource>('https://example.com/video.mp4', { 
+  mimeType: 'video/mp4',
+});
+```
+
+## Creating a Source from an Asset
+
+You can also create a source directly from an `Asset` object using `Source.fromAsset`:
+
+```typescript
+const source = await core.Source.fromAsset<core.AudioSource>({
+  input: new File([], 'my-audio.MP3', { type: 'audio/mpeg' }),
+  mimeType: 'audio/mpeg',
+});
+```
+
+## Sharing Sources Between Clips
+
+One of the key benefits of sources is that they can be shared between multiple clips. This allows you to reuse the same asset efficiently:
+
+```typescript
+const source = await core.Source.from<core.VideoSource>('https://example.com/video.mp4');
+
+// Create multiple clips from the same source
+const clip1 = new core.VideoClip(source, { range: [0, 5] });
+const clip2 = new core.VideoClip(source, { range: [10, 15] });
+const clip3 = new core.VideoClip(source, { range: [20, 25] });
+
+// All three clips share the same cached source data
+```
+
+## Source-Dependent Features
+
+Depending on the source type, you can access additional features. Here are the important ones:
+
+### Audio Source
+
+Audio sources provide access to audio-specific properties and methods:
+
+```typescript
+const source = await core.Source.from<core.AudioSource>('https://example.com/audio.mp3');
+
+// Basic properties
+source.duration; // 10 (seconds)
+source.sampleRate; // 44100 (Hz)
+source.numberOfChannels; // 2 (stereo)
+
+// Extract audio samples for waveform visualization
+// start and end are in seconds
+for (const audioSample of source.samplesInRange({ start: 0, end: 20 })) {
+  // audioSample contains sample data that can be used to draw the audio waveform
+}
+
+// Detect silence ranges in the audio
+const silences = await source.silences(); 
+// Returns an array of silence ranges: [{ start: 5.2, end: 6.8 }, ...]
+```
+
+### Video Source
+
+Video sources inherit all audio source properties and add video-specific ones:
+
+```typescript
+const source = await core.Source.from<core.VideoSource>('https://example.com/video.mp4');
+
+// All audio properties are also available (duration, sampleRate, numberOfChannels)
+
+// Video-specific properties
+source.fps; // 30 (average frame rate estimation)
+source.width; // 1920 (pixels)
+source.height; // 1080 (pixels)
+source.bitrate; // 1000000 (bits per second estimated)
+
+// Extract thumbnails at regular intervals
+// Useful for creating video preview timelines
+for (const thumbnail of source.thumbnailsInRange({ 
+  start: 0,      // Start time in seconds
+  end: 20,       // End time in seconds
+  count: 10,      // Number of thumbnails to generate
+  height: 100     // Thumbnail height in pixels (width maintains aspect ratio)
+})) {
+  // thumbnail contains image data that can be used to draw thumbnails
+}
+```
+
+### Caption Source
+
+Caption sources are created from transcript JSON files and provide methods for working with captions:
+
+```typescript
+const source = await core.Source.from<core.CaptionSource>('https://example.com/captions.json');
+
+// Calculate words per minute (useful for timing adjustments)
+const wpm = source.computeWpm();
+
+// Group words together (useful for displaying multiple words per caption)
+const groups = source.groupBy({ count: 2 }); // Groups words into pairs
+
+// Export to SRT format
+const srt = source.toSrt(); 
+// Returns: { text: string, blob: Blob } - SRT-formatted subtitle file
+
+// Optimize transcript for better readability
+source.optimize(); 
+// Improves the readability of the transcript for display purposes
+// This can adjust timing, punctuation, and word grouping
+```
+
+### Image Source
+
+Image sources provide basic image metadata:
+
+```typescript
+const source = await core.Source.from<core.ImageSource>('https://example.com/image.jpg');
+
+// Image dimensions
+source.width;  // 1920 (pixels)
+source.height; // 1080 (pixels)
+```

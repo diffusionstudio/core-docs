@@ -25,7 +25,7 @@ The encoder can be customized via its second argument, which allows you to confi
 ```typescript
 {
   video: {
-    enabled: true, // true by default
+    enabled: true,
     codec: 'avc',
     bitrate: 10e6,
     fps: 30,
@@ -74,9 +74,6 @@ This approach writes the MP4 chunks directly to disk as they are generated, allo
 
 ```typescript
 const blob = await encoder.render();            // Returns the video as a Blob.
-core.assert(blob.type == 'success');
-const blob = res.data;
-
 await encoder.render('myVideo.mp4');            // Downloads the result with a specified name.
 await encoder.render((data: Uint8Array, position: number) => {
   console.log(data, position)
@@ -93,22 +90,14 @@ if (!('showSaveFilePicker' in window)) {
 
 This fallback ensures that the export process continues seamlessly even if `showSaveFilePicker` is not available.
 
-## Cancelling the export
+## Aborting the export
 
-You can cancel the export by calling the `cancel` method on the encoder:
-
-```typescript
-encoder.cancel();
-```
-
-## Getting the export progress
-
-You can get the export progress by listening to the `progress` event on the encoder:
+This feature was implemented utilizing the `AbortController` Web API. You can simply pass in the abort signal as the second argument of the render method:
 
 ```typescript
-encoder.onProgress = (event) => {
-  const { progress, total } = event;
+const controller = new AbortController();
 
-  console.log(Math.round(progress * 100 / total) + '%');
-};
+encoder.render(fileHandle, controller.signal);
+
+controller.abort();
 ```

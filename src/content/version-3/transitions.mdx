@@ -11,16 +11,14 @@ The `Fade` transition provides a smooth fade-in and fade-out effect between clip
 ```typescript
 import * as core from '@diffusionstudio/core';
 
-const layer = await composition.add(
-  new core.Layer({ mode: 'SEQUENTIAL' })
-);
+const layer = composition.createLayer().sequential();
 
 await layer.add(
   new core.ImageClip('/image1.png', {
     height: '100%',
-    duration: 3,
+    duration: '3s',
     transition: {
-      duration: 1,
+      duration: '3s',
       type: 'dissolve',
     }
   })
@@ -29,7 +27,7 @@ await layer.add(
 await layer.add(
   new core.ImageClip('/image2.png', {
     height: '100%',
-    duration: 3,
+    duration: '3s',
   })
 );
 ```

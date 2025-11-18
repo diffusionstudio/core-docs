@@ -5,13 +5,13 @@ The following example demonstrates how to style text clips:
 ```typescript
 import * as core from '@diffusionstudio/core';
 
-const thin = await core.loadFont({
+const thin = await core.FontManager.load({
   family: 'Geologica',
   weight: '300',
   size: 19
 });
 
-const bold = await core.loadFont({
+const bold = await core.FontManager.load({
   family: 'Geologica',
   weight: '700',
   size: 24
@@ -31,14 +31,14 @@ await composition.add(
       radius: 10,
       opacity: 100,
     },
-    strokes: [{
+    stroke: {
       width: 5,
       color: '#000000',
       lineJoin: 'round',
       lineCap: 'round',
       miterLimit: 4,
-    }],
-    shadows: [
+    },
+    shadow: [
       {
         offsetX: 4,
         offsetY: 5,
@@ -76,7 +76,9 @@ With the `styles` property, you can define the styles you want to override for s
 We have loaded the web font from a predefined set of popular web fonts. You can also use custom web fonts like this:
 
 ```typescript
-const roboto = await core.loadFont({
+const manager = new core.FontManager();
+
+const roboto = await manager.load({
   source: "https://fonts.gstatic.com/s/roboto/v32/KFOlCnqEu92Fr1MmSU5fBBc4AMP6lQ.woff2",
   weight: '400',
   family: 'Roboto'
@@ -85,21 +87,13 @@ const roboto = await core.loadFont({
 
 or local fonts (in Chrome):
 ```typescript
-const localFonts = await core.getLocalFonts();
+const local = await core.FontManager.localFonts();
 
-console.log(localFonts);
+console.log(local);
 
-const font = await core.loadFont(localFonts[0].variants[0]);
+const font = await manager.load(local[0].variants[0]);
 ```
 
-to get all loaded fonts you can use:
+For more examples, see [examples](https://github.com/diffusionstudio/examples/blob/f8bde98c53320b8bcd78a541244fc95ff2b40cbd/showcase/src/compositions/font.ts).
 
-```typescript
-const loadedFonts = await core.getLoadedFonts(); // JSON serializable array
-```
-
-and to restore loaded fonts, call:
-
-```typescript
-await core.restoreFonts(loadedFonts);
-```
+Setting the `align` and `baseline` properties will adjust the anchor point, comparable to the [transform-origin](https://developer.mozilla.org/en-US/docs/Web/CSS/transform-origin) in CSS.

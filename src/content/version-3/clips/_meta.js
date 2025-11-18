@@ -1,10 +1,11 @@
 const meta = {
   video: "Video Clip",
-  caption: "Caption Clip",
+  html: "HTML Clip",
   image: "Image Clip",
   text: "Text Clip",
   audio: "Audio Clip",
-  shapes: "Shape Clips",
+  rectangle: "Rectangle Clip",
+  circle: "Circle Clip",
   custom: "Custom Clip",
 };
 
